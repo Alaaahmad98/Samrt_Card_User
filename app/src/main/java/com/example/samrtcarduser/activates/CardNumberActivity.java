@@ -38,7 +38,7 @@ public class CardNumberActivity extends AppCompatActivity {
     private DatabaseReference reference;
 
     private Intent intent;
-    private String child;
+    private String child, price;
 
     private SharedPreferences preferences;
     private String root, parent;
@@ -61,29 +61,26 @@ public class CardNumberActivity extends AppCompatActivity {
         adapter.setOnItemClickListener(new NumberCardAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(int position) {
+                String numberCard = list.get(position).getNumber();
                 Intent intent = new Intent(CardNumberActivity.this, PayCardActivity.class);
                 intent.putExtra("NAME_CARD", child);
+                intent.putExtra("NUMBER_CARD", numberCard);
+                intent.putExtra("NUMBER_PRICE", price);
                 startActivity(intent);
             }
         });
     }
 
     private void initiateView() {
-
         intent = getIntent();
         child = intent.getStringExtra("NAME_CARD");
         recyclerView = findViewById(R.id.recycler_all_number_Card);
         recyclerView.setHasFixedSize(true);
-
-
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         list = new ArrayList<>();
         adapter = new NumberCardAdapter(CardNumberActivity.this, list);
-
         tvNotFound = findViewById(R.id.tv_not_found);
         progressBar = findViewById(R.id.progress_bar);
-
-
         reference = FirebaseDatabase.getInstance().getReference("Card/" + root + "/" + parent + "/" + child);
     }
 
@@ -97,6 +94,12 @@ public class CardNumberActivity extends AppCompatActivity {
                         for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                             String name = snapshot.getKey();
                             System.out.println("name " + name);
+
+                            if (name.equals("price")) {
+                                price = snapshot.getValue(String.class);
+                            }
+
+
                             if (name.equals("CardNumber")) {
 
                                 reference.child(name).addValueEventListener(new ValueEventListener() {

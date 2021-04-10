@@ -155,7 +155,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
 
 
     private void fullProfileInfo(String firstName, String laseName) {
-        tvName.setText(firstName + " " + laseName);
+        tvName.setText(firstName + " " + laseName+".");
     }
 
 

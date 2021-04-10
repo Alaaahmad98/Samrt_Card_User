@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/item_profile"
+        android:icon="@drawable/icon_person"
+        android:title="Profile" />
+
+    <item
+        android:id="@+id/item_wallet"
+        android:icon="@drawable/ic_wallet"
+        android:title="Wallet" />
+
+
+
+    <item
+        android:id="@+id/item_about_around_jo"
+    android:icon="@drawable/ic_card"
+    android:title="Around Smart Card" />
+
+    <item
+        android:id="@+id/item_contact_us"
+        android:icon="@drawable/icon_contact"
+        android:title="Contact Us" />
+
+
+    <item
+        android:id="@+id/item_sign_out"
+        android:icon="@drawable/icon_sign_out"
+        android:title="Sign Out" />
+
+</menu>

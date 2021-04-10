@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.samrtcarduser">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+        <activity
+            android:name=".activates.PayCardActivity"
+            android:parentActivityName=".activates.CardNumberActivity" />
+        <activity android:name=".MainActivity" />
+        <activity android:name=".activates.HomeActivity" />
+        <activity
+            android:name=".activates.ProfileActivity"
+            android:parentActivityName=".activates.HomeActivity" />
+        <activity android:name=".activates.LoginActivity" />
+        <activity
+            android:name=".activates.CategoryActivity"
+            android:parentActivityName=".activates.HomeActivity" />
+        <activity
+            android:name=".activates.CardNumberActivity"
+            android:parentActivityName=".activates.TypeActivity" />
+        <activity
+            android:name=".activates.TypeActivity"
+            android:parentActivityName=".activates.CategoryActivity" />
+        <activity android:name=".activates.RegisterActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>

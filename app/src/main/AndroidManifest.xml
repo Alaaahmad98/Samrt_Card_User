@@ -13,7 +13,7 @@
         android:theme="@style/AppTheme">
         <activity
             android:name=".activates.PayCardActivity"
-            android:parentActivityName=".activates.CardNumberActivity" />
+            android:parentActivityName=".activates.TypeActivity" />
         <activity android:name=".MainActivity" />
         <activity android:name=".activates.HomeActivity" />
         <activity
@@ -25,7 +25,7 @@
             android:parentActivityName=".activates.HomeActivity" />
         <activity
             android:name=".activates.CardNumberActivity"
-            android:parentActivityName=".activates.TypeActivity" />
+            android:parentActivityName=".activates.HomeActivity" />
         <activity
             android:name=".activates.TypeActivity"
             android:parentActivityName=".activates.CategoryActivity" />

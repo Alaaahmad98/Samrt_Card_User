@@ -8,6 +8,7 @@ import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -16,6 +17,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.samrtcarduser.R;
 import com.example.samrtcarduser.adapter.HomeAdapter;
 import com.example.samrtcarduser.helper.HomeHelper;
+import com.example.samrtcarduser.helper.NumberCardHelper;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -38,13 +40,14 @@ public class TypeActivity extends AppCompatActivity {
 
     private ProgressBar progressBar;
 
-    private DatabaseReference reference;
+    private DatabaseReference reference, referenceCardName;
 
     private Intent intent;
     private String nameParent;
 
     private SharedPreferences preferences;
     private String root;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,7 +76,6 @@ public class TypeActivity extends AppCompatActivity {
         list = new ArrayList<>();
 
         tvNotFound = findViewById(R.id.tv_not_found);
-
 
 
         reference = FirebaseDatabase.getInstance().getReference("Card/" + root + "/" + nameParent);
@@ -115,6 +117,7 @@ public class TypeActivity extends AppCompatActivity {
         );
 
     }
+
 
     @Override
     public boolean onSupportNavigateUp() {

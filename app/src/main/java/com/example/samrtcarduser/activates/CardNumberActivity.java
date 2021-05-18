@@ -31,6 +31,7 @@ public class CardNumberActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private NumberCardAdapter adapter;
     private List<NumberCardHelper> list;
+    private List<NumberCardHelper> listCardNumber;
 
     private TextView tvNotFound;
     private ProgressBar progressBar;
@@ -58,17 +59,6 @@ public class CardNumberActivity extends AppCompatActivity {
         initiateView();
         fullRecyclerView();
 
-        adapter.setOnItemClickListener(new NumberCardAdapter.OnItemClickListener() {
-            @Override
-            public void onItemClick(int position) {
-                String numberCard = list.get(position).getNumber();
-                Intent intent = new Intent(CardNumberActivity.this, PayCardActivity.class);
-                intent.putExtra("NAME_CARD", child);
-                intent.putExtra("NUMBER_CARD", numberCard);
-                intent.putExtra("NUMBER_PRICE", price);
-                startActivity(intent);
-            }
-        });
     }
 
     private void initiateView() {
@@ -78,74 +68,43 @@ public class CardNumberActivity extends AppCompatActivity {
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         list = new ArrayList<>();
-        adapter = new NumberCardAdapter(CardNumberActivity.this, list);
+        listCardNumber = new ArrayList<>();
+
+        list = (List<NumberCardHelper>) intent.getSerializableExtra("LIST_TOTAL_CARD_PAID");
+
+        for (int i = 0; i < list.size(); i++) {
+            System.out.println(list.get(i));
+            listCardNumber.add(new NumberCardHelper(String.valueOf(list.get(i))));
+        }
+
+        adapter = new NumberCardAdapter(CardNumberActivity.this, listCardNumber);
         tvNotFound = findViewById(R.id.tv_not_found);
         progressBar = findViewById(R.id.progress_bar);
-        reference = FirebaseDatabase.getInstance().getReference("Card/" + root + "/" + parent + "/" + child);
     }
 
     private void fullRecyclerView() {
-        final Query userQuery = reference;
-
-        userQuery.addListenerForSingleValueEvent(
-                new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                            String name = snapshot.getKey();
-                            System.out.println("name " + name);
-
-                            if (name.equals("price")) {
-                                price = snapshot.getValue(String.class);
-                            }
-
-
-                            if (name.equals("CardNumber")) {
-
-                                reference.child(name).addValueEventListener(new ValueEventListener() {
-                                    @Override
-                                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                                        for (DataSnapshot child : snapshot.getChildren()) {
-                                            String numberCard = child.getValue().toString();
-                                            list.add(new NumberCardHelper(numberCard));
-                                        }
-                                        recyclerView.setAdapter(adapter);
-                                        if (list.isEmpty()) {
-                                            progressBar.setVisibility(View.INVISIBLE);
-                                            tvNotFound.setVisibility(View.VISIBLE);
-                                        } else {
-                                            progressBar.setVisibility(View.INVISIBLE);
-                                            tvNotFound.setVisibility(View.GONE);
-                                        }
-                                    }
-
-                                    @Override
-                                    public void onCancelled(@NonNull DatabaseError error) {
-
-                                    }
-                                });
-
-                            }
-                        }
-
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-
-                    }
-                }
-        );
+        recyclerView.setAdapter(adapter);
+        if (listCardNumber.isEmpty()) {
+            progressBar.setVisibility(View.INVISIBLE);
+            tvNotFound.setVisibility(View.VISIBLE);
+        } else {
+            progressBar.setVisibility(View.INVISIBLE);
+            tvNotFound.setVisibility(View.GONE);
+        }
     }
 
     @Override
     public boolean onSupportNavigateUp() {
         onBackPressed();
+        startActivity(new Intent(this, HomeActivity.class));
+        finish();
         return true;
     }
 
     @Override
     public void onBackPressed() {
         super.onBackPressed();
+        startActivity(new Intent(this, HomeActivity.class));
+        finish();
     }
 }

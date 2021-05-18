@@ -41,7 +41,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="4dp"
-            android:text="Active"
+            android:text="Paid"
             android:textColor="@color/colorBlack"
             android:textSize="16sp"
             app:layout_constraintBottom_toBottomOf="@+id/view_status"

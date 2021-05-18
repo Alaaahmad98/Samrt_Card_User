@@ -1,6 +1,7 @@
 package com.example.samrtcarduser.activates;
 
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.Dialog;
@@ -15,27 +16,40 @@ import android.widget.Toast;
 
 import com.example.samrtcarduser.R;
 
+import com.example.samrtcarduser.helper.NumberCardHelper;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class PayCardActivity extends AppCompatActivity {
 
 
-    private DatabaseReference reference;
+    private DatabaseReference reference, reference2;
     private SharedPreferences preferences;
     private String root, parent;
     private Intent intent;
-    private String child, numberCard, priceCard;
+    private String child, priceCard;
 
-    private TextView tvCardName, tvCardCategory, tvCardType, tvCardNumber, tvCardPrice, tvCounter;
+    private TextView tvCardName, tvCardCategory, tvCardType, tvCardPrice, tvCounter;
     private Button bnAdd, bnSub, bnPay;
 
     private Dialog dialogPay;
     private TextView tvTotalNumber, tvTotalPrice, tvPay;
 
-    private String strCount="0";
+    private String strCount = "0";
     private int intTotalPrice;
+
+    private int intTotalCardNumber;
+    List<String> listCardNumber = new ArrayList<>();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,7 +58,6 @@ public class PayCardActivity extends AppCompatActivity {
         getSupportActionBar().setTitle("Buy The Card");
 
         initiateView();
-        fullCardInfo();
 
         bnAdd.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -68,11 +81,17 @@ public class PayCardActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 int count = Integer.parseInt(tvCounter.getText().toString().trim());
-                if (count == 0) {
-                    strCount = "0";
-                } else {
-                    tvCounter.setText(String.valueOf(count - 1));
-                    strCount = tvCounter.getText().toString().trim();
+
+                switch (strCount) {
+                    case "0":
+                        strCount = "0";
+                        intTotalPrice = 0;
+                        break;
+                    default:
+                        intTotalPrice = intTotalPrice - Integer.parseInt(priceCard);
+                        tvCounter.setText(String.valueOf(count - 1));
+                        strCount = tvCounter.getText().toString().trim();
+                        break;
                 }
             }
         });
@@ -81,7 +100,9 @@ public class PayCardActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if (strCount.equals("0")) {
-                    Toast.makeText(PayCardActivity.this, "Please Add Card", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(PayCardActivity.this, "Please add card", Toast.LENGTH_SHORT).show();
+                } else if (Integer.parseInt(strCount) > intTotalCardNumber) {
+                    Toast.makeText(PayCardActivity.this, "The total of cards is greater than the total available cards", Toast.LENGTH_SHORT).show();
                 } else {
                     openDialogPay(strCount, intTotalPrice);
                 }
@@ -103,6 +124,13 @@ public class PayCardActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
+
+                Intent intent = new Intent(PayCardActivity.this, CardNumberActivity.class);
+                intent.putExtra("NAME_CARD", child);
+                intent.putExtra("LIST_TOTAL_CARD_PAID", (Serializable) listCardNumber);
+                startActivity(intent);
+                finish();
+                dialogPay.dismiss();
             }
         });
 
@@ -115,7 +143,6 @@ public class PayCardActivity extends AppCompatActivity {
         tvCardCategory = findViewById(R.id.tv_card_category);
         tvCardType = findViewById(R.id.tv_card_type);
         tvCardPrice = findViewById(R.id.tv_price);
-        tvCardNumber = findViewById(R.id.tv_number);
         tvCounter = findViewById(R.id.tv_counter);
         bnAdd = findViewById(R.id.bn_add);
         bnSub = findViewById(R.id.bn_sub);
@@ -126,18 +153,62 @@ public class PayCardActivity extends AppCompatActivity {
 
         intent = getIntent();
         child = intent.getStringExtra("NAME_CARD");
-        numberCard = intent.getStringExtra("NUMBER_CARD");
-        priceCard = intent.getStringExtra("NUMBER_PRICE");
 
+        reference = FirebaseDatabase.getInstance().getReference("Card/" + root + "/" + parent + "/" + child + "/");
 
-        reference = FirebaseDatabase.getInstance().getReference("Card/" + root + "/" + parent + "/" + child);
+        getPriceCard(reference);
+
     }
 
-    private void fullCardInfo() {
+    private void getPriceCard(DatabaseReference reference) {
+
+        reference.addListenerForSingleValueEvent(
+                new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                            String name = snapshot.getKey();
+                            System.out.println("name " + name);
+                            switch (name) {
+                                case "price":
+                                    priceCard = snapshot.getValue(String.class);
+                                    fullCardInfo(priceCard);
+                                    break;
+                                case "CardNumber":
+                                    reference2 = FirebaseDatabase.getInstance().getReference("Card/" + root + "/" + parent + "/" + child + "/" + name);
+                                    reference2.addListenerForSingleValueEvent(new ValueEventListener() {
+                                        @Override
+                                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                            for (DataSnapshot child : snapshot.getChildren()) {
+                                                listCardNumber.add(child.getValue().toString());
+                                                intTotalCardNumber += 1;
+                                            }
+                                        }
+
+                                        @Override
+                                        public void onCancelled(@NonNull DatabaseError error) {
+
+                                        }
+                                    });
+                                    break;
+                            }
+                        }
+
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                }
+        );
+    }
+
+
+    private void fullCardInfo(String priceCard) {
         tvCardName.setText(root + ".");
         tvCardCategory.setText(parent + ".");
         tvCardType.setText(child + ".");
-        tvCardNumber.setText(numberCard + ".");
         tvCardPrice.setText(priceCard + " JD" + ".");
     }
 

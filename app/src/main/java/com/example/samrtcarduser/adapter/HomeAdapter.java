@@ -17,6 +17,7 @@ import com.example.samrtcarduser.R;
 import com.example.samrtcarduser.activates.CardNumberActivity;
 import com.example.samrtcarduser.activates.CategoryActivity;
 import com.example.samrtcarduser.activates.HomeActivity;
+import com.example.samrtcarduser.activates.PayCardActivity;
 import com.example.samrtcarduser.activates.TypeActivity;
 import com.example.samrtcarduser.helper.HomeHelper;
 
@@ -83,7 +84,7 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.ViewHolder> {
                     context.startActivity(intent);
                 }
                 else if (context instanceof TypeActivity) {
-                    intent = new Intent(context, CardNumberActivity.class);
+                    intent = new Intent(context, PayCardActivity.class);
                     intent.putExtra("NAME_CARD", name);
                     context.startActivity(intent);
                 }

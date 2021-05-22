@@ -12,6 +12,9 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
+            android:name=".activates.HistoryActivity"
+            android:parentActivityName=".activates.HomeActivity" />
+        <activity
             android:name=".activates.PayCardActivity"
             android:parentActivityName=".activates.TypeActivity" />
         <activity android:name=".MainActivity" />

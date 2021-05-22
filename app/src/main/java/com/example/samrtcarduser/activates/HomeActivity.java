@@ -1,5 +1,6 @@
 package com.example.samrtcarduser.activates;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -21,7 +22,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.samrtcarduser.R;
 
 import com.example.samrtcarduser.adapter.HomeAdapter;
+import com.example.samrtcarduser.adapter.TransactionAdapter;
 import com.example.samrtcarduser.helper.HomeHelper;
+import com.example.samrtcarduser.helper.TransactionItem;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -37,25 +40,27 @@ import java.util.List;
 
 public class HomeActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
-
     private RecyclerView recyclerView;
     private HomeAdapter adapter;
     private List<HomeHelper> list;
 
 
-    private TextView tvNotFound, tvName;
+    private TextView tvNotFound, tvName, tvTotalBalance;
     private ProgressBar progressBar;
     private DrawerLayout drawerLayout;
     private ActionBarDrawerToggle toggle;
     private NavigationView navigationView;
 
-    private DatabaseReference reference, referenceProfile;
+    private DatabaseReference reference, referenceProfile, referenceTransaction;
 
 
     private FirebaseAuth firebaseAuth;
     private FirebaseUser currentUser;
     private String uid;
     private String strFirstName, strLastName;
+    private int totalBalance = 0;
+
+    private boolean checkedBalance = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,8 +70,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
 
         initiateView();
         getProfileData();
-
-
+        getBalance();
     }
 
 
@@ -78,6 +82,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         recyclerView.setLayoutManager(new GridLayoutManager(this, 2));
         list = new ArrayList<>();
         tvNotFound = findViewById(R.id.tv_not_found);
+        tvTotalBalance = findViewById(R.id.tv_current_balance);
 
 
         drawerLayout = findViewById(R.id.drawer_layout);
@@ -155,7 +160,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
 
 
     private void fullProfileInfo(String firstName, String laseName) {
-        tvName.setText(firstName + " " + laseName+".");
+        tvName.setText(firstName + " " + laseName + ".");
     }
 
 
@@ -203,6 +208,9 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
             case R.id.item_profile:
                 startActivity(new Intent(this, ProfileActivity.class));
                 break;
+            case R.id.item_history:
+                startActivity(new Intent(this, HistoryActivity.class));
+                break;
             case R.id.item_sign_out:
                 new AlertDialog.Builder(this)
                         .setTitle(getResources().getString(R.string.app_name))
@@ -237,5 +245,34 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void getBalance() {
+        referenceTransaction = FirebaseDatabase.getInstance().getReference("Transaction/");
+
+        referenceTransaction.addValueEventListener(new ValueEventListener() {
+            @SuppressLint("SetTextI18n")
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for (DataSnapshot postSnapShot : snapshot.getChildren()) {
+                    checkedBalance = true;
+                    String price = postSnapShot.child("price").getValue().toString();
+                    String strUid = postSnapShot.child("uid").getValue().toString();
+
+                    if (strUid.equals(uid)) {
+                        totalBalance += Integer.parseInt(price);
+                    }
+                }
+                if (checkedBalance) {
+                    tvTotalBalance.setText("-" + totalBalance + ".0" + " JOD");
+                }
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(HomeActivity.this, error.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }

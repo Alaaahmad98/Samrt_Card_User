@@ -16,12 +16,12 @@ import android.widget.Toast;
 
 import com.example.samrtcarduser.R;
 
-import com.example.samrtcarduser.helper.NumberCardHelper;
+import com.example.samrtcarduser.helper.TransactionItem;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 import java.io.Serializable;
@@ -50,12 +50,27 @@ public class PayCardActivity extends AppCompatActivity {
     private int intTotalCardNumber;
     List<String> listCardNumber = new ArrayList<>();
 
+    private FirebaseAuth auth;
+    private String currentUser;
+    private DatabaseReference mReferenceTransaction;
+
+    private TransactionItem transactionItem;
+    private String cardNumber;
+    private List<String> listKeyCardNumber = new ArrayList<>();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_pay_card);
         getSupportActionBar().setTitle("Buy The Card");
+
+
+        auth = FirebaseAuth.getInstance();
+        currentUser = auth.getCurrentUser().getUid();
+
+        mReferenceTransaction = FirebaseDatabase.getInstance().getReference().child("Transaction");
+
 
         initiateView();
 
@@ -110,7 +125,7 @@ public class PayCardActivity extends AppCompatActivity {
         });
     }
 
-    private void openDialogPay(String count, int totalPrice) {
+    private void openDialogPay(String count, final int totalPrice) {
         dialogPay = new Dialog(this);
         dialogPay.setContentView(R.layout.dialog_confirm);
         tvTotalNumber = dialogPay.findViewById(R.id.tv_total_number_card);
@@ -124,17 +139,30 @@ public class PayCardActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
+                List<String> list = new ArrayList<>();
+                for (int i = 0; i < Integer.parseInt(strCount); i++) {
+                    list.add(listCardNumber.get(i));
+                    deleteNumberPaid(listKeyCardNumber.get(i));
+                }
+
+                transactionItem = new TransactionItem(currentUser, list.toString(), String.valueOf(totalPrice));
+                mReferenceTransaction.push().setValue(transactionItem);
+
 
                 Intent intent = new Intent(PayCardActivity.this, CardNumberActivity.class);
                 intent.putExtra("NAME_CARD", child);
-                intent.putExtra("LIST_TOTAL_CARD_PAID", (Serializable) listCardNumber);
+                intent.putExtra("LIST_TOTAL_CARD_PAID", (Serializable) list);
                 startActivity(intent);
                 finish();
                 dialogPay.dismiss();
             }
         });
-
         dialogPay.show();
+    }
+
+    private void deleteNumberPaid(String key) {
+        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Card/" + root + "/" + parent + "/" + child + "/" + cardNumber);
+        reference.child(key).removeValue();
     }
 
 
@@ -167,7 +195,7 @@ public class PayCardActivity extends AppCompatActivity {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                            String name = snapshot.getKey();
+                            final String name = snapshot.getKey();
                             System.out.println("name " + name);
                             switch (name) {
                                 case "price":
@@ -175,11 +203,13 @@ public class PayCardActivity extends AppCompatActivity {
                                     fullCardInfo(priceCard);
                                     break;
                                 case "CardNumber":
+                                    cardNumber = name;
                                     reference2 = FirebaseDatabase.getInstance().getReference("Card/" + root + "/" + parent + "/" + child + "/" + name);
                                     reference2.addListenerForSingleValueEvent(new ValueEventListener() {
                                         @Override
                                         public void onDataChange(@NonNull DataSnapshot snapshot) {
                                             for (DataSnapshot child : snapshot.getChildren()) {
+                                                listKeyCardNumber.add(reference2.child(name).push().getKey());
                                                 listCardNumber.add(child.getValue().toString());
                                                 intTotalCardNumber += 1;
                                             }

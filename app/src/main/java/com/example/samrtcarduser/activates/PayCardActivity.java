@@ -31,7 +31,6 @@ import java.util.List;
 
 public class PayCardActivity extends AppCompatActivity {
 
-
     private DatabaseReference reference, reference2;
     private SharedPreferences preferences;
     private String root, parent;
@@ -144,10 +143,8 @@ public class PayCardActivity extends AppCompatActivity {
                     list.add(listCardNumber.get(i));
                     deleteNumberPaid(listKeyCardNumber.get(i));
                 }
-
                 transactionItem = new TransactionItem(currentUser, list.toString(), String.valueOf(totalPrice));
                 mReferenceTransaction.push().setValue(transactionItem);
-
 
                 Intent intent = new Intent(PayCardActivity.this, CardNumberActivity.class);
                 intent.putExtra("NAME_CARD", child);
@@ -161,8 +158,8 @@ public class PayCardActivity extends AppCompatActivity {
     }
 
     private void deleteNumberPaid(String key) {
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Card/" + root + "/" + parent + "/" + child + "/" + cardNumber);
-        reference.child(key).removeValue();
+        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Card/" + root + "/" + parent + "/" + child + "/" + cardNumber + "/" + key);
+        reference.removeValue();
     }
 
 
@@ -209,7 +206,7 @@ public class PayCardActivity extends AppCompatActivity {
                                         @Override
                                         public void onDataChange(@NonNull DataSnapshot snapshot) {
                                             for (DataSnapshot child : snapshot.getChildren()) {
-                                                listKeyCardNumber.add(reference2.child(name).push().getKey());
+                                                listKeyCardNumber.add(child.getKey());
                                                 listCardNumber.add(child.getValue().toString());
                                                 intTotalCardNumber += 1;
                                             }
